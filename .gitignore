@@ -5,6 +5,8 @@ __pycache__
 
 # Env
 .env
+/env
+*.env
 myvenv/
 venv/
 
@@ -13,12 +15,6 @@ db.sqlite3
 
 # Static folder at project root
 /static/
-
-# macOS
-._*
-.DS_Store
-.fseventsd
-.Spotlight-V100
 
 # Windows
 Thumbs.db*
@@ -30,3 +26,6 @@ $RECYCLE.BIN/
 .vscode/
 .history/
 *.code-workspac
+
+#migrations
+migrations/
