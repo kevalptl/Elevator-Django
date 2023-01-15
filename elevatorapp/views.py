@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from .background import elevator_request_check
+from background_task.models import Task
 from .models import *
 
 @csrf_exempt
@@ -22,8 +24,14 @@ def init_elevator(request):
             if elevator:
                 response_data['message']="Elevators are already set with no_of_elevator:{}, min_floor:{} , max_floor:{} ".format(elevator.values()[0]['no_of_elevator'], elevator.values()[0]['min_floor'],elevator.values()[0]['max_floor'])
             else:
-                elevator = Elevator.objects.create(no_of_elevator=no_of_elevator, min_floor=min_floor, max_floor=max_floor)
-                response_data['message']="updated"
+                try: 
+                    elevator = Elevator.objects.create(no_of_elevator=no_of_elevator, min_floor=min_floor, max_floor=max_floor) 
+                    # TODO: optimize this insertion
+                    for  i in range(1,no_of_elevator+1):
+                        elevator_car = ElevatorCar.objects.create(elevator_no=i, current_floor=min_floor)
+                    response_data['message']="updated"
+                except:
+                    response_data['message']="Not updated"
         else:
             missing_req_key = []
             if min_floor>=max_floor:

@@ -14,3 +14,23 @@ class Elevator(models.Model):
 
     def __str__(self):
         return '%d %d %d' % (self.no_of_elevator,self.min_floor, self.max_floor)
+
+class ElevatorCar(models.Model):
+    Up = 1
+    Down = -1
+    Stopped = 0
+    MOVING_STATUS_CHOICES = (
+        (Up, 'Up'),
+        (Down, 'Down'),
+        (Stopped, 'Stopped'),
+    )
+    elevator_no = models.IntegerField(null=False, blank=False)
+    current_floor = models.IntegerField(null=False, blank=False)
+    destination_floor = models.IntegerField(null=True, blank=True)
+    moving_status = models.IntegerField(choices=MOVING_STATUS_CHOICES, default=Stopped)
+    is_doorOpen = models.BooleanField(default=False)
+    is_underMaintainence = models.BooleanField(default=False)
+
+
+    def __str__(self):
+        return '%d %d %d' % (self.no_of_elevator,self.min_floor, self.max_floor)
