@@ -3,7 +3,7 @@ import time
 # from django.contrib.auth.models import User
 
 @background()
-def elevator_request_check(elevator_no):
+def elevator_system(elevator_no):
     print("start")
     time.sleep(50)
     print("stopped")
