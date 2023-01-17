@@ -82,6 +82,9 @@ def request_elevator(request):
                 return HttpResponse(json.dumps(response_data), content_type="application/json",status=202)
             else:
                 elevator_request = ElevatorRequest.objects.create(elevator_no=elevator_no, destination_floor=destination_floor)
+                tasks = Task.objects.filter(verbose_name="elevator_task_elevator{}".format(elevator_no))
+                if len(tasks) == 0:
+                    elevator_task(elevator_no, verbose_name="elevator_task_elevator{}".format(elevator_no))
                 response_data['message']="Request made successfully"
         else:
             response_data['message']="Request made is out of system"

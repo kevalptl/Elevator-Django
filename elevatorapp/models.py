@@ -36,4 +36,4 @@ class ElevatorRequest(models.Model):
     destination_floor = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return '%d %d' % (self.no_of_elevator,self.destination_floor)
+        return '%d %d' % (self.elevator_no,self.destination_floor)
