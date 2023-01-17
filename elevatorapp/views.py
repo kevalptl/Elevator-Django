@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
-from .background import elevator_system
+from .background import elevator_task
 from background_task.models import Task
 from .models import *
 
@@ -73,7 +73,7 @@ def request_elevator(request):
             return HttpResponse(json.dumps(response_data), content_type="application/json",status=400)
         elevator = Elevator.objects.all()
         if not elevator:
-            response_data['message']="Elevator not initialized".format(missing_req_key)   
+            response_data['message']="Elevator not initialized" 
             return HttpResponse(json.dumps(response_data), content_type="application/json",status=400)
         if (((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])) and  ((destination_floor>=elevator.values()[0]['min_floor']) and (destination_floor<=elevator.values()[0]['max_floor']))):
             elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
@@ -90,20 +90,80 @@ def request_elevator(request):
         response_data['message']="method not allowed"
         return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
 
+@csrf_exempt
 def fetch_request(request, elevator_no):
-    pass
+    response_data={}
+    if request.method == 'GET':
+        elevator = Elevator.objects.all()
+        if ((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])):
+            requested_floor = list(ElevatorRequest.objects.filter(elevator_no=elevator_no).distinct("destination_floor").values_list('destination_floor',flat=True))
+            response_data['requested_floors']=requested_floor
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=200)
+        else:
+            response_data['message']="elevator_no is out of system"
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=400)
+    else:
+        response_data['message']="method not allowed"
+        return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
 
+@csrf_exempt
 def fetch_destination(request, elevator_no):
-    pass
+    response_data={}
+    if request.method == 'GET':
+        elevator = Elevator.objects.all()
+        if ((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])):
+            elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
+            if elevator_car.values()[0]['is_underMaintenance']:
+                response_data['message']="Elevator selected is UNDER MAINTENANCE"
+                return HttpResponse(json.dumps(response_data), content_type="application/json",status=202)
+            next_destination_floor = elevator_car.values()[0]['destination_floor']
+            response_data['next_destination_floor']=next_destination_floor
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=200)
+        else:
+            response_data['message']="elevator_no is out of system"
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=400)
+    else:
+        response_data['message']="method not allowed"
+        return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
 
+@csrf_exempt
 def fetch_direction(request, elevator_no):
-    pass
+    response_data={}
+    if request.method == 'GET':
+        elevator = Elevator.objects.all()
+        if ((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])):
+            elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
+            if elevator_car.values()[0]['is_underMaintenance']:
+                response_data['message']="Elevator selected is UNDER MAINTENANCE"
+                return HttpResponse(json.dumps(response_data), content_type="application/json",status=202)
+            if elevator_car.values()[0]['moving_status'] in [0,1,-1]:
+                moving_status = 'STOPPED' if elevator_car.values()[0]['moving_status']==0 else 'UP' if elevator_car.values()[0]['moving_status']==1 else 'DOWN'
+                response_data['moving_status']=moving_status
+                return HttpResponse(json.dumps(response_data), content_type="application/json",status=200)
+            else:
+                response_data['message']="Problem with moving status recorded"
+                return HttpResponse(json.dumps(response_data), content_type="application/json",status=502)
+        else:
+            response_data['message']="elevator_no is out of system"
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=400)
+    else:
+        response_data['message']="method not allowed"
+        return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
 
+@csrf_exempt
 def put_under_maintenance(request, elevator_no):
-    pass
+    response_data={}
+    if request.method == 'POST':
+        pass
+    else:
+        response_data['message']="method not allowed"
+        return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
 
-def open_door(request, elevator_no):
-    pass
-
-def close_door(request, elevator_no):
-    pass
+@csrf_exempt
+def operate_door(request, elevator_no):
+    response_data={}
+    if request.method == 'POST':
+        pass
+    else:
+        response_data['message']="method not allowed"
+        return HttpResponse(json.dumps(response_data), content_type="application/json",status=405)
