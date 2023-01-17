@@ -1,5 +1,6 @@
 from background_task import background
 import time
+from .models import *
 # from django.contrib.auth.models import User
 
 @background()
@@ -36,3 +37,11 @@ def elevator_task(elevator_no):
     print("start")
     time.sleep(50)
     print("stopped")
+
+@background()
+def door_task(elevator_no):
+    ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_doorOpen=True)
+    print("door has open")
+    time.sleep(10)
+    ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_doorOpen=False)
+    print("door has closed")
