@@ -1,6 +1,5 @@
 asgiref==3.6.0
 async-timeout==4.0.2
-certifi @ file:///C:/b/abs_85o_6fm0se/croot/certifi_1671487778835/work/certifi
 Django==3.2.16
 django-background-tasks==1.2.5
 django-compat==1.0.15
