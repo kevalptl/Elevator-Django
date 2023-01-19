@@ -15,7 +15,8 @@
 5) Run django app using command<br>
 `python manage.py runserver`<br><br>
 6) To run elevator tasks in background<br>
-`python manage.py process_tasks`<br><br>
+`python manage.py process_tasks`<br>
+Just make sure whenever the API is hosted the same time this background tasks shoul also be running to serve those API requests by elevator in real time.
 
 
 **<h3>Why used background tasks?</h3>**
@@ -23,5 +24,5 @@ The elevator system process required to run continously to serves the requests r
 
 **<h3>Next steps to optimize</h3>**
 * We can use redis (cache memory) to save and serve requests(instead of ElevatorRequest model) for an elevators.<br>
-* Add authentication header in API
+* Add authentication header in API.
 
