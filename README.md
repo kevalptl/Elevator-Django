@@ -16,7 +16,7 @@
 `python manage.py runserver`<br><br>
 6) To run elevator tasks in background<br>
 `python manage.py process_tasks`<br>
-Just make sure whenever the API is hosted the same time this background tasks shoul also be running to serve those API requests by elevator in real time.
+Just make sure whenever the API is hosted the same time this background tasks should also be running to serve and perform elevator reuqests in real time.
 
 
 **<h3>Why used background tasks?</h3>**
