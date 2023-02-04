@@ -41,7 +41,7 @@ class ElevatorRequestViewSet(mixins.CreateModelMixin,
 class ElevatorCarViewSet(viewsets.GenericViewSet):
     queryset = ElevatorCar.objects.all()
     serializer_class = ElevatorCarSerializer
-    @action(detail=False, methods=['post'], url_path='put/under-maintenance')
+    @action(detail=False, methods=['post'], url_path='put/under-maintenance', url_name="under_maintenance")
     def under_maintenance(self, request):
         serializer = ElevatorCarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -51,5 +51,21 @@ class ElevatorCarViewSet(viewsets.GenericViewSet):
             ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_underMaintenance=True)
             ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_doorOpen=True)
             return Response({'message': 'Elevator {} Marked UNDER MAINTENANCE'.format(elevator_no)})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], url_path='operate-door', url_name="operate_door")
+    def operate_door(self, request):
+        serializer = ElevatorCarSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        elevator_no = request.data.get('elevator_no')
+        elevator_car = ElevatorRequest.objects.filter(elevator_no=elevator_no)
+        if elevator_car and request.data.get('is_doorOpen'):
+            tasks = Task.objects.filter(verbose_name="door_task_elevator{}".format(elevator_no))
+            if len(tasks) == 0:
+                door_task(elevator_no, verbose_name="door_task_elevator{}".format(elevator_no))
+                return Response({"message": "Door OPENED"})
+            else:
+                return Response({"message": "Door is already in OPEN state"})
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
