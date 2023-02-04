@@ -48,7 +48,30 @@ class ElevatorRequestSerializer(serializers.ModelSerializer):
         if (((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])) and  ((destination_floor>=elevator.values()[0]['min_floor']) and (destination_floor<=elevator.values()[0]['max_floor']))):
             elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
             if elevator_car.values()[0]['is_underMaintenance']:
-                raise CustomValidation("Elevator selected is UNDER MAINTENANCE", "ElevatorCar", status_code=status.HTTP_202_CONFLICT)
+                raise CustomValidation("Elevator selected is UNDER MAINTENANCE", "ElevatorCar", status_code=status.HTTP_202_ACCEPTED)
+            else:
+                return validate_data
+        else:
+            validation_error = "Request made is out of system"
+        raise serializers.ValidationError(validation_error)
+
+class ElevatorCarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElevatorCar
+        # fields = '__all__'
+        fields = ['elevator_no','moving_status','destination_floor', "is_doorOpen"]
+    
+        
+
+    def validate(self, validate_data):
+        elevator_no = validate_data.get('elevator_no')
+        elevator = Elevator.objects.all()
+        if not elevator:
+            validation_error = "Elevator not initialized"
+        if ((elevator_no>0) and (elevator_no<=elevator.values()[0]['no_of_elevator'])):
+            elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
+            if elevator_car.values()[0]['is_underMaintenance']:
+                raise CustomValidation("Elevator selected is UNDER MAINTENANCE", "ElevatorCar", status_code=status.HTTP_202_ACCEPTED)
             else:
                 return validate_data
         else:

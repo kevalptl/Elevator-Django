@@ -9,6 +9,7 @@ app_name = 'elevatorapp'
 router = DefaultRouter()
 router.register(r'drf/init-elevator', drfviews.ElevatorViewSet, basename='elevator')
 router.register(r'drf/elevator-request', drfviews.ElevatorRequestViewSet, basename='elevator-request')
+router.register(r'drf/elevator-car', drfviews.ElevatorCarViewSet, basename='elevator-car')
 
 urlpatterns = [
     path('init/elevator', views.init_elevator, name="initiate_elevator"),

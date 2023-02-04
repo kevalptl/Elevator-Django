@@ -1,8 +1,8 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins, status
 from django.shortcuts import get_object_or_404
-from .serializer import ElevatorSerializer, ElevatorRequestSerializer
+from .serializer import ElevatorSerializer, ElevatorRequestSerializer, ElevatorCarSerializer
 from .models import *
 from .background import elevator_task, door_task
 from background_task.models import Task
@@ -35,6 +35,21 @@ class ElevatorRequestViewSet(mixins.CreateModelMixin,
             elevator_task(elevator_no, verbose_name="elevator_task_elevator{}".format(elevator_no))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     def retrieve(self, request, pk=None, *args, **kwargs):
-        queryset = ElevatorRequest.objects.filter(elevator_no=pk)
-        serializer = ElevatorRequestSerializer(queryset, many=True)
-        return Response(serializer.data)
+        requested_floor = list(ElevatorRequest.objects.filter(elevator_no=pk).distinct("destination_floor").values_list('destination_floor',flat=True))
+        return Response({"requested_floors": requested_floor})
+
+class ElevatorCarViewSet(viewsets.GenericViewSet):
+    queryset = ElevatorCar.objects.all()
+    serializer_class = ElevatorCarSerializer
+    @action(detail=False, methods=['post'], url_path='put/under-maintenance')
+    def under_maintenance(self, request):
+        serializer = ElevatorCarSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        elevator_no = request.data.get('elevator_no')
+        elevator_car = ElevatorRequest.objects.filter(elevator_no=elevator_no)
+        if elevator_car:
+            ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_underMaintenance=True)
+            ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_doorOpen=True)
+            return Response({'message': 'Elevator {} Marked UNDER MAINTENANCE'.format(elevator_no)})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
