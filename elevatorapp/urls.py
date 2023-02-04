@@ -1,8 +1,13 @@
 from . import views
 from . import drfviews
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 app_name = 'elevatorapp'
+
+# DRF routes
+router = DefaultRouter()
+router.register(r'drf/init-elevator', drfviews.ElevatorViewSet)
 
 urlpatterns = [
     path('init/elevator', views.init_elevator, name="initiate_elevator"),
@@ -13,6 +18,7 @@ urlpatterns = [
     path('request/under-maintenance', views.put_under_maintenance, name="put_under_maintenance"),
     path('operate-door', views.operate_door, name="operate_door"),
 
-    #DRS APIs
-    
+    #DRF APIs
+    # router.urls,
 ]
+urlpatterns += router.urls
