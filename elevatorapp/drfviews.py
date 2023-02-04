@@ -46,20 +46,20 @@ class ElevatorCarViewSet(viewsets.GenericViewSet):
         serializer = ElevatorCarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         elevator_no = request.data.get('elevator_no')
-        elevator_car = ElevatorRequest.objects.filter(elevator_no=elevator_no)
+        elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
         if elevator_car:
             ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_underMaintenance=True)
             ElevatorCar.objects.filter(elevator_no=elevator_no).update(is_doorOpen=True)
             return Response({'message': 'Elevator {} Marked UNDER MAINTENANCE'.format(elevator_no)})
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Invalid request body"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='operate-door', url_name="operate_door")
     def operate_door(self, request):
         serializer = ElevatorCarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         elevator_no = request.data.get('elevator_no')
-        elevator_car = ElevatorRequest.objects.filter(elevator_no=elevator_no)
+        elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
         if elevator_car and request.data.get('is_doorOpen'):
             tasks = Task.objects.filter(verbose_name="door_task_elevator{}".format(elevator_no))
             if len(tasks) == 0:
@@ -68,4 +68,27 @@ class ElevatorCarViewSet(viewsets.GenericViewSet):
             else:
                 return Response({"message": "Door is already in OPEN state"})
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Invalid request body"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['get'], url_path='fetch-destination', url_name="fetch_destination")
+    def fetch_destination(self, request, pk=None):
+        elevator_no = pk
+        serializer = ElevatorCarSerializer(data = {"elevator_no":elevator_no})
+        serializer.is_valid(raise_exception=True)
+        elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
+        next_destination_floor = elevator_car.values()[0]['destination_floor']
+        return Response({"next_destination_floor": next_destination_floor})
+    
+    @action(detail=True, methods=['get'], url_path='fetch-direction', url_name="fetch_direction")
+    def fetch_direction(self, request, pk=None):
+        elevator_no = pk
+        serializer = ElevatorCarSerializer(data = {"elevator_no":elevator_no})
+        serializer.is_valid(raise_exception=True)
+        elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
+        print(elevator_car.values())
+        if elevator_car.values()[0]['moving_status'] in [0,1,-1]:
+            moving_status = 'STOPPED' if elevator_car.values()[0]['moving_status']==0 else 'UP' if elevator_car.values()[0]['moving_status']==1 else 'DOWN'
+            return Response({"moving_status": moving_status})
+        else:
+            return Response({"Problem with moving status recorded"},status=status.HTTP_400_BAD_REQUEST)
+
