@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'elevatorapp',
-    'background_task'
+    'background_task',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
