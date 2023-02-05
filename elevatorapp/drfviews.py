@@ -85,7 +85,6 @@ class ElevatorCarViewSet(viewsets.GenericViewSet):
         serializer = ElevatorCarSerializer(data = {"elevator_no":elevator_no})
         serializer.is_valid(raise_exception=True)
         elevator_car = ElevatorCar.objects.filter(elevator_no=elevator_no)
-        print(elevator_car.values())
         if elevator_car.values()[0]['moving_status'] in [0,1,-1]:
             moving_status = 'STOPPED' if elevator_car.values()[0]['moving_status']==0 else 'UP' if elevator_car.values()[0]['moving_status']==1 else 'DOWN'
             return Response({"moving_status": moving_status})
